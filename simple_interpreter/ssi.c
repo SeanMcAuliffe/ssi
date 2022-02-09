@@ -1,20 +1,16 @@
+#define  _POSIX_C_SOURCE 200809L
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
-#include <signal.h>
-#include <stdlib.h>
-#include <stdint.h>
 #include <unistd.h>
 #include <stdbool.h>
-#include <poll.h>
 #include <readline/readline.h>
 #include "linked_list.h"
 
-#define MAX_USERNAME_SIZE 255
-#define MAX_HOSTNAME_SIZE 255
-#define MAX_INPUT_SIZE 255
-#define MAX_PATH_LENGTH 1024
 
+#define MAX_HOSTNAME_SIZE 255
+#define MAX_INPUT_SIZE 1024
+#define MAX_PATH_LENGTH 1024
 
 void clear_buffer(char* buffer) {
     for (int i = 0; i < MAX_INPUT_SIZE; i++) {
@@ -23,20 +19,16 @@ void clear_buffer(char* buffer) {
 }
 
 bool is_ongoing(const char* buffer, ssize_t len) {
-
     char* literal = "exit\0";
     bool result = true;
-
     if (strcmp(buffer, "\n") == 0){
         return true;
     }
-
     for (int i = 0; i < len - 1; i++) {
         if (buffer[i] != literal[i]) {
             result = false;
         }
     }
-
     return !result;
 }
 
@@ -69,16 +61,31 @@ int main() {
 
     getcwd(current_directory, sizeof(current_directory));
 
-    printf("%s@%s: %s > \n", user_login, host_name, current_directory);
+    printf("Testing linked list module:\n\n");
+
+    bg_list_t* head = create_list(create_node(1, "one"));
+    head = list_append(head, create_node(2, "two"));
+    head = list_append(head, create_node(3, "three"));
+
+    list_print(head);
+
+    printf("Removing 2\n\n");
+
+    head = list_remove(head, find_node_by_pid(head, 2));
+
+    list_print(head);
+
+    printf("Destroying list\n");
+    destroy_list(head);
+    printf("List length: %d\n\n", list_length(head));
 
     while (ongoing) {
+        printf("%s@%s: %s > ", user_login, host_name, current_directory);
         num_read = getline(&user_input_buffer, &len, stdin);
         ongoing = is_ongoing(user_input_buffer, num_read);
         clear_buffer(user_input_buffer);
         getcwd(current_directory, sizeof(current_directory));
-        printf("%s@%s: %s > ", user_login, host_name, current_directory);
     }
 
-    printf("\n");
     return 0;
 }

@@ -1,19 +1,17 @@
 #include "linked_list.h"
 #include <stdio.h>
-#include <sys/types.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
 
 /* Initializers */
-bg_pro_t* create_node(pid_t proc_id, char command[1024]) {
+bg_pro_t* create_node(pid_t proc_id, char command[MAX_INPUT_SIZE]) {
     bg_pro_t* node = (bg_pro_t*) malloc(sizeof(bg_pro_t));
     if (node == NULL){
         printf("Error: malloc() cannot allocate space for new background process.\n");
         exit(1);
     }
     node->pid = proc_id;
-    strncpy(node->cmd, command, 1024*sizeof(char));
+    strncpy(node->cmd, command, MAX_INPUT_SIZE);
     node->next = NULL;
 
     return node;
@@ -33,6 +31,7 @@ bg_list_t* create_list(bg_pro_t* bg_head) {
     return list;
 }
 
+/* Memory freeing at end of life */
 void destroy_list(bg_list_t* list) {
     bg_pro_t* temp;
     if (list == NULL) {
@@ -46,7 +45,7 @@ void destroy_list(bg_list_t* list) {
     free(list);
 }
 
-/* Module functions */
+/* Module API functions */
 bg_list_t* list_append(bg_list_t* list, bg_pro_t* node) {
     if (list == NULL) {
         printf("Error: cannot append to NULL list.\n");
@@ -83,6 +82,7 @@ bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node) {
     return list;
 }
 
+/* Utility functions */
 int list_length(bg_list_t* list) {
     int list_length = 0;
     if (list->head == NULL) {

@@ -6,11 +6,13 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#define MAX_INPUT_SIZE 1024
+
 /* Node Type */
 typedef struct bg_pro {
     struct bg_pro* next;
     pid_t pid;
-    char cmd[1024];
+    char cmd[MAX_INPUT_SIZE];
 } bg_pro_t;
 
 /* List type */
