@@ -7,7 +7,8 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <poll.h>
-
+#include <readline/readline.h>
+#include "linked_list.h"
 
 #define MAX_USERNAME_SIZE 255
 #define MAX_HOSTNAME_SIZE 255
