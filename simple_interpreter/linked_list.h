@@ -1,6 +1,11 @@
 #ifndef OPERATING_SYSTEMS_LINKED_LIST_H
 #define OPERATING_SYSTEMS_LINKED_LIST_H
 
+#include <stdio.h>
+#include <sys/types.h>
+#include <stdlib.h>
+#include <unistd.h>
+
 /* Node Type */
 typedef struct bg_pro {
     struct bg_pro* next;
@@ -27,5 +32,6 @@ bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node);
 /* Helpers */
 int list_length(bg_list_t* list);
 bg_pro_t* find_node_by_pid(bg_list_t* list, pid_t proc_id);
+void list_print(bg_list_t* list);
 
 #endif //OPERATING_SYSTEMS_LINKED_LIST_H

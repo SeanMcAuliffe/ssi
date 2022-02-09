@@ -69,7 +69,7 @@ int main() {
 
     getcwd(current_directory, sizeof(current_directory));
 
-    printf("%s@%s: %s > ", user_login, host_name, current_directory);
+    printf("%s@%s: %s > \n", user_login, host_name, current_directory);
 
     while (ongoing) {
         num_read = getline(&user_input_buffer, &len, stdin);
