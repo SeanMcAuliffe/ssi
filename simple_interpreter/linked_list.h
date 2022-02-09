@@ -3,7 +3,7 @@
 
 /* Node Type */
 typedef struct bg_pro {
-    struct bg_proc* next;
+    struct bg_pro* next;
     pid_t pid;
     char cmd[1024];
 } bg_pro_t;
