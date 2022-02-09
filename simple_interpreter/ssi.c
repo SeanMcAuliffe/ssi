@@ -1,4 +1,4 @@
-#define  _POSIX_C_SOURCE 200809L
+#define  _GNU_SOURCE
 #include <pthread.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,24 +60,6 @@ int main() {
     }
 
     getcwd(current_directory, sizeof(current_directory));
-
-    printf("Testing linked list module:\n\n");
-
-    bg_list_t* head = create_list(create_node(1, "one"));
-    head = list_append(head, create_node(2, "two"));
-    head = list_append(head, create_node(3, "three"));
-
-    list_print(head);
-
-    printf("Removing 2\n\n");
-
-    head = list_remove(head, find_node_by_pid(head, 2));
-
-    list_print(head);
-
-    printf("Destroying list\n");
-    destroy_list(head);
-    printf("List length: %d\n\n", list_length(head));
 
     while (ongoing) {
         printf("%s@%s: %s > ", user_login, host_name, current_directory);

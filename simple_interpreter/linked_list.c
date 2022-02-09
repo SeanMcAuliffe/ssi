@@ -63,19 +63,41 @@ bg_list_t* list_append(bg_list_t* list, bg_pro_t* node) {
 
 bg_pro_t* find_node_by_pid(bg_list_t* list, pid_t proc_id) {
     bg_pro_t* node = list->head;
-    while (node->pid != proc_id) {
+    while ((node->pid != proc_id) && (node != NULL)) {
         node = node->next;
     }
      return node;
 }
 
 bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node) {
+    if (node == NULL) {
+        printf("Error: cannot remove null node.\n");
+        exit(1);
+    }
+    if (list->head == NULL) {
+        return list;
+    }
+    if (node == list->head) {
+        bg_pro_t* temp = list->head;
+        list->head = node->next;
+        free(temp);
+        return list;
+    }
     bg_pro_t* temp = list->head;
     while(temp->next != NULL) {
         if (node == temp->next) {
-            bg_pro_t* to_remove = temp->next;
-            temp->next = temp->next->next;
-            free(to_remove);
+            if (temp->next->next == NULL) {
+                // Removing last item of list
+                bg_pro_t* to_remove = temp->next;
+                temp->next = NULL;
+                free(to_remove);
+                return list;
+                printf("1\n");
+            } else {
+                bg_pro_t *to_remove = temp->next;
+                temp->next = temp->next->next;
+                free(to_remove);
+            }
         }
         temp = temp->next;
     }
