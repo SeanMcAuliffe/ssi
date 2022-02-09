@@ -4,8 +4,8 @@ CFLAGS="-Wall" "-std=c99"
 .PHONY all:
 all: ssi
 
-ssi: main.c
-	$(CC) $(CLFAGS) -o ssi main.c
+ssi: ssi.c
+	$(CC) $(CLFAGS) -o ssi ssi.c
 
 .PHONY clean:
 clean:
