@@ -43,9 +43,8 @@ void update_cwd(char* current_directory) {
 void update_login(char* user_login) {
     int rc = getlogin_r(user_login, MAX_USER_NAME);
     if (rc != 0) {
-        //printf("Error: get_login_r() returned %d\n", rc);
-        strncpy(user_login, "default\0", 8); //TODO remove this for linux server
-        //exit(1);
+        printf("Error: get_login_r() returned %d\n", rc);
+        exit(1);
     }
 }
 
@@ -156,7 +155,6 @@ bool execute_user_cmd(char** cmds, int num_read) {
     // 'cd' keyword, implement using chdir()
     else if(!strcmp(cmds[0], "cd\0")) {
         // get user home directory
-        // TODO this may need to be changed to ENV var method
         struct passwd* pw = getpwuid(getuid());
         if (num_read < 2) { // User typed just 'cd' -> go home directory
             rc = chdir(pw->pw_dir);
