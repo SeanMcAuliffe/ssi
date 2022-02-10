@@ -1,7 +1,7 @@
-#include "linked_list.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "linked_list.h"
 
 /* Initializers */
 bg_pro_t* create_node(pid_t proc_id, char* command[MAX_CMD_NUMBER], int num_args) {

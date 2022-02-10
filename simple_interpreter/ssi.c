@@ -8,9 +8,8 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <pwd.h>
-#include "linked_list.h"
-#include <poll.h>
 #include <time.h>
+#include "linked_list.h"
 
 #define MAX_USER_NAME 255
 #define MAX_HOSTNAME_SIZE 255
@@ -98,6 +97,10 @@ void add_background_task(char** cmd, int num_args) {
             exit(1);
         }
     } else {
+        /* This small delay, is improper I know.
+            But on the linux server it allows the
+            prompt to print in a more natural location
+            after a bg task has terminated */
         struct timespec t;
         t.tv_sec = 0;
         t.tv_nsec = 100000000;

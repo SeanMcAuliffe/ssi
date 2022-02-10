@@ -1,5 +1,6 @@
 # Makefile
 # Sean McAuliffe, V00913346
+# Feb 11, 2022
 
 # Compiler flags
 CFLAGS = -Wall -std=c99
