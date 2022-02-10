@@ -62,11 +62,17 @@ bg_list_t* list_append(bg_list_t* list, bg_pro_t* node) {
 }
 
 bg_pro_t* find_node_by_pid(bg_list_t* list, pid_t proc_id) {
+    if (list->head == NULL) {
+        return NULL;
+    }
     bg_pro_t* node = list->head;
-    while ((node->pid != proc_id) && (node != NULL)) {
+    while (node != NULL) {
+        if (node->pid == proc_id) {
+            break;
+        }
         node = node->next;
     }
-     return node;
+    return node;
 }
 
 bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node) {
@@ -92,8 +98,8 @@ bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node) {
                 temp->next = NULL;
                 free(to_remove);
                 return list;
-                printf("1\n");
             } else {
+                // Somewhere in the middle of the list
                 bg_pro_t *to_remove = temp->next;
                 temp->next = temp->next->next;
                 free(to_remove);
