@@ -10,12 +10,15 @@ BIN = ssi
 # Modules
 OBJS = linked_list.o
 
+# External libraries
+LIBS = -lreadline
+
 .PHONY all:
 all: $(BIN)
 
 # This default rule compiles the executable program
 $(BIN): $(OBJS) $(BIN).c
-	$(CC) $(CFLAGS) $(OBJS) $(BIN).c -o $(BIN)
+	$(CC) $(CFLAGS) $(OBJS) $(BIN).c $(LIBS) -o $(BIN)
 
 # Compile all modules
 %.o: %.c %.h

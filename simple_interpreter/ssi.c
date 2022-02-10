@@ -46,6 +46,8 @@ void update_login(char* user_login) {
 /* Attempt to parse user input. If new input is present
  * return true, else false */
 bool parse_user_input(char* user_input) {
+    user_input = readline((const char*)"");
+    printf("%s", user_input);
     return false;
 }
 
@@ -68,7 +70,7 @@ int main() {
     bool input_success = false;
 
     while (ongoing) {
-        //printf("%s@%s: %s > ", user_login, host_name, current_directory);
+        printf("%s@%s: %s > ", user_login, host_name, current_directory);
         input_success = parse_user_input(user_input);
         update_cwd(current_directory);
         ongoing = false;
