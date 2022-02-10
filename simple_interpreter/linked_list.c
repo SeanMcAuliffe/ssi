@@ -54,6 +54,11 @@ bg_list_t* list_append(bg_list_t* list, bg_pro_t* node) {
         printf("Error: cannot append to NULL list.\n");
         exit(1);
     }
+    if (list->length == 0) {
+        list->head = node;
+        list->length = 1;
+        return list;
+    }
     if (list->head->next == NULL) {
         list->head->next = node;
     } else {
@@ -90,9 +95,9 @@ bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node) {
     }
     if (node == list->head) {
         bg_pro_t* temp = list->head;
-        list->head = node->next;
+        list->head = NULL;
         free(temp);
-        list->length--;
+        list->length = 0;
         return list;
     }
     bg_pro_t* temp = list->head;
@@ -176,3 +181,12 @@ void process_print(bg_list_t* list) {
     printf("Total Background jobs: %d\n", index);
 }
 
+void print_node(bg_pro_t* node) {
+    printf("%d: %s ", node->pid, node->argv[0]);
+    for (int i = 1; i < node->num_args; i++) {
+        if (node->argv[i] != NULL) {
+            printf("%s ", node->argv[i]);
+        }
+    }
+    printf("has terminated\n");
+}

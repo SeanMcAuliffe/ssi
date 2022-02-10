@@ -39,5 +39,6 @@ int list_length(bg_list_t* list);
 bg_pro_t* find_node_by_pid(bg_list_t* list, pid_t proc_id);
 void list_print(bg_list_t* list);
 void process_print(bg_list_t* list);
+void print_node(bg_pro_t* node);
 
 #endif //OPERATING_SYSTEMS_LINKED_LIST_H

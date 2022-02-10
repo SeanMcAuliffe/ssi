@@ -9,6 +9,8 @@
 #include <sys/wait.h>
 #include <pwd.h>
 #include "linked_list.h"
+#include <poll.h>
+#include <time.h>
 
 #define MAX_USER_NAME 255
 #define MAX_HOSTNAME_SIZE 255
@@ -62,7 +64,7 @@ int parse_user_input(char** user_input, char* prompt) {
         return cmd_parts;
     }
     if (strlen(readline_buffer) > MAX_INPUT_SIZE) {
-        printf("Entered command is long than maximum allowed size.\n");
+        printf("Error: command is longer than maximum allowed size.\n");
         free(readline_buffer);
         return 0;
     }
@@ -79,21 +81,28 @@ int parse_user_input(char** user_input, char* prompt) {
 }
 
 void add_background_task(char** cmd, int num_args) {
+
+    /* Create new argv without 'bg' keyword in it */
     char* argv[MAX_CMD_NUMBER];
-    // Create new argv without 'bg' keyword in it
-    for (int i = 0; i < num_args - 1; i++) {
+    for (int i = 0; i < num_args; i++) {
         argv[i] = cmd[i+1];
     }
-
     pid_t p = fork();
     if (p == -1) {
-        printf("When creating background process, fork() returned error code: -1\n");
+        printf("While creating background process, fork() returned error code: -1\n");
         return;
     }
-    if (p == 0) {
-        exit(1);
-        // Child process, execvp;
+    else if (p == 0) {
+        int rc = execvp(argv[0], argv);
+        if (rc == -1) {
+            printf("Error occurred while creating background task.\n");
+            exit(1);
+        }
     } else {
+        struct timespec t;
+        t.tv_sec = 0;
+        t.tv_nsec = 100000000;
+        nanosleep(&t, &t);
         // If list is not yet instantiated, create it
         if (bg_proc_list == NULL) {
             bg_proc_list = create_list(create_node(p, argv, --num_args));
@@ -102,7 +111,6 @@ void add_background_task(char** cmd, int num_args) {
             list_append(bg_proc_list, create_node(p, argv, --num_args));
         }
     }
-
 }
 
 void add_blocking_child(char** argv) {
@@ -126,7 +134,6 @@ void add_blocking_child(char** argv) {
 /* Executes user cmd, returns bool indicating if program should continue or terminate
  * true = continue, false = terminate. */
 bool execute_user_cmd(char** cmds, int num_read) {
-    /* Return code for system calls */
     int rc = -1;
 
     /* Special cases */
@@ -137,12 +144,17 @@ bool execute_user_cmd(char** cmds, int num_read) {
     }
 
     // 'Exit' keyword
-    if (!strcmp(cmds[0], "exit\0")) {
+    else if (!strcmp(cmds[0], "exit\0")) {
         return false;
     }
 
+    // 'bglist' keyword
+    else if (!strcmp(cmds[0], "bglist\0")) {
+        process_print(bg_proc_list);
+    }
+
     // 'cd' keyword, implement using chdir()
-    if(!strcmp(cmds[0], "cd\0")) {
+    else if(!strcmp(cmds[0], "cd\0")) {
         // get user home directory
         // TODO this may need to be changed to ENV var method
         struct passwd* pw = getpwuid(getuid());
@@ -156,12 +168,10 @@ bool execute_user_cmd(char** cmds, int num_read) {
         if (rc != 0) {
             printf("Error: cd returned status code: %d\n", rc);
         }
-        free(readline_buffer);
-        return true;
     }
 
     /* 'bg' keyword -> execute cmd in background */
-    if (!strcmp(cmds[0], "bg\0")) {
+    else if (!strcmp(cmds[0], "bg\0")) {
         add_background_task(cmds, num_read);
     } else {
         /* Generic Commands (not to be executed in background) */
@@ -177,6 +187,30 @@ bool execute_user_cmd(char** cmds, int num_read) {
 void clear_user_input(char** buffer, int n) {
     for (int i = 0; i < n; i++) {
         buffer[i] = NULL;
+    }
+}
+
+/* Checks if any of the previously created bg processes have terminated.
+ * Returns true if a child has terminated and been removed from LL. */
+bool check_bg_proc_status() {
+    if (bg_proc_list == NULL) {
+        return false; // no background processes
+    }
+    if (bg_proc_list->length == 0) {
+        return false; // no background processes
+    }
+    pid_t pid = waitpid(-1, NULL, WNOHANG);
+    if (pid == 0) {
+        return false; // no state change in any child bg
+    } else if (pid == -1) {
+        printf("Error: call to waitpid() failed\n");
+        return false;
+    } else {
+        // Find the LL node representing bg process which terminated
+        bg_pro_t* process = find_node_by_pid(bg_proc_list, pid);
+        print_node(process);
+        list_remove(bg_proc_list, process);
+        return true;
     }
 }
 
@@ -203,23 +237,22 @@ int main() {
     int num_read = 0;
 
     while (ongoing) {
-        // Update information and reformat prompt
+        /* Update prompt information */
         update_cwd(current_directory);
         sprintf(prompt, prompt_format, user_login, host_name, current_directory);
 
-        // Parse user input
+        /* Parse and execute user input */
         num_read = parse_user_input(user_input, prompt);
         if (num_read) {
             ongoing = execute_user_cmd(user_input, num_read);
             clear_user_input(user_input, num_read);
         }
+
+        /* Check status of background processes */
+        check_bg_proc_status();
     }
 
-    if (bg_proc_list != NULL) {
-        process_print(bg_proc_list);
-    }
-
-    // Teardown and exit gracefully
+    /* Teardown and exit gracefully */
     if (bg_proc_list != NULL) {
         destroy_list(bg_proc_list);
     }
