@@ -4,16 +4,18 @@
 #include <string.h>
 
 /* Initializers */
-bg_pro_t* create_node(pid_t proc_id, char command[MAX_INPUT_SIZE]) {
+bg_pro_t* create_node(pid_t proc_id, char* command[MAX_CMD_NUMBER], int num_args) {
     bg_pro_t* node = (bg_pro_t*) malloc(sizeof(bg_pro_t));
     if (node == NULL){
         printf("Error: malloc() cannot allocate space for new background process.\n");
         exit(1);
     }
     node->pid = proc_id;
-    strncpy(node->cmd, command, MAX_INPUT_SIZE);
+    for (int i = 0; i < num_args; i++){
+        strncpy(node->argv[i], command[i], MAX_INPUT_SIZE);
+    }
     node->next = NULL;
-
+    node->num_args = num_args;
     return node;
 }
 
@@ -28,6 +30,7 @@ bg_list_t* create_list(bg_pro_t* bg_head) {
         exit(1);
     }
     list->head = bg_head;
+    list->length = 1;
     return list;
 }
 
@@ -58,6 +61,7 @@ bg_list_t* list_append(bg_list_t* list, bg_pro_t* node) {
         for (temp = list->head->next; temp->next != NULL; temp = temp->next) {/* Empty loop */}
         temp->next = node;
     }
+    list->length++;
     return list;
 }
 
@@ -81,12 +85,14 @@ bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node) {
         exit(1);
     }
     if (list->head == NULL) {
+        list->length = 0;
         return list;
     }
     if (node == list->head) {
         bg_pro_t* temp = list->head;
         list->head = node->next;
         free(temp);
+        list->length--;
         return list;
     }
     bg_pro_t* temp = list->head;
@@ -97,6 +103,7 @@ bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node) {
                 bg_pro_t* to_remove = temp->next;
                 temp->next = NULL;
                 free(to_remove);
+                list->length--;
                 return list;
             } else {
                 // Somewhere in the middle of the list
@@ -107,6 +114,7 @@ bg_list_t* list_remove(bg_list_t* list, bg_pro_t* node) {
         }
         temp = temp->next;
     }
+    list->length--;
     return list;
 }
 
@@ -124,15 +132,47 @@ int list_length(bg_list_t* list) {
     return list_length;
 }
 
+/* For debugging purposes */
 void list_print(bg_list_t* list) {
+    if (list->head == NULL) {
+        printf("Cannot print NULL list.\n");
+        return;
+    }
     bg_pro_t* temp = list->head;
     int index = 0;
     while (temp != NULL) {
-        printf("List index: %d\n", index);
-        printf("Proc ID: %d\n", temp->pid);
-        printf("Command: %s\n\n", temp->cmd);
+        printf("List index: %d  --  ", index);
+        printf("Proc ID: %d  --  ", temp->pid);
+        for (int i = 0; i < temp->num_args; i++) {
+            if (temp->argv[i] != NULL) {
+                printf(" %s", temp->argv[i]);
+            }
+        }
+        printf("\n");
         temp = temp->next;
         index++;
     }
+}
+
+/* Implements 'bglist' command */
+void process_print(bg_list_t* list) {
+    if (list == NULL) {
+        printf("Total Background jobs: 0\n");
+        return;
+    }
+    bg_pro_t* temp = list->head;
+    int index = 0;
+    while (temp != NULL) {
+        printf("%d: %s ", temp->pid, temp->argv[0]);
+        for (int i = 1; i < temp->num_args; i++) {
+            if (temp->argv[i] != NULL) {
+                printf("%s ", temp->argv[i]);
+            }
+        }
+        printf("\n");
+        temp = temp->next;
+        index++;
+    }
+    printf("Total Background jobs: %d\n", index);
 }
 
