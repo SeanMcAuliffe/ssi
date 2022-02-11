@@ -11,8 +11,7 @@
 #include <time.h>
 #include "linked_list.h"
 
-#define MAX_USER_NAME 255
-#define MAX_HOSTNAME_SIZE 255
+#define MAX_HOSTNAME_SIZE 1024
 
 /* Linked list to store background process information */
 bg_list_t* bg_proc_list = NULL;
@@ -39,12 +38,14 @@ void update_cwd(char* current_directory) {
 }
 
 /* Wrapper for get_login_r() */
-void update_login(char* user_login) {
-    int rc = getlogin_r(user_login, MAX_USER_NAME);
-    if (rc != 0) {
-        printf("Error: get_login_r() returned %d\n", rc);
-        exit(1);
+char* update_login() {
+    char* rc = getlogin();
+    if (rc == NULL) {
+        //printf("Error: get_login() returned NULL\n");
+        return "default_user\0";
+        //exit(1);
     }
+    return rc;
 }
 
 /* Attempt to parse user input. Returns the number of cmd parts
@@ -218,7 +219,7 @@ bool check_bg_proc_status() {
 int main() {
 
     /* Prompt information */
-    char user_login[MAX_USER_NAME] = {0};
+    char* user_login = update_login();
     char host_name[MAX_HOSTNAME_SIZE] = {0};
     char current_directory[MAX_INPUT_SIZE] = {0};
 
@@ -230,7 +231,6 @@ int main() {
     char prompt_format[MAX_INPUT_SIZE] = "%s@%s: %s > ";
 
     /* Initialize Prompt */
-    update_login(user_login);
     update_hostname(host_name);
     update_cwd(current_directory);
 
