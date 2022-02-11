@@ -37,13 +37,14 @@ void update_cwd(char* current_directory) {
     }
 }
 
-/* Wrapper for get_login_r() */
+/* Wrapper for getlogin() */
 char* update_login() {
     char* rc = getlogin();
     if (rc == NULL) {
-        //printf("Error: get_login() returned NULL\n");
+        /* getlogin() returns NULL on my local machine.
+         * This case helps with testing. */
+        printf("Error: getlogin() returned NULL\n");
         return "default_user\0";
-        //exit(1);
     }
     return rc;
 }
@@ -101,7 +102,9 @@ void add_background_task(char** cmd, int num_args) {
         /* This small delay, is improper I know.
             But on the linux server it allows the
             prompt to print in a more natural location
-            after a bg task has terminated */
+            after a bg task has terminated. Really I
+            should poll STDOUT and reprint the prompt
+            upon changes to POLLOUT. */
         struct timespec t;
         t.tv_sec = 0;
         t.tv_nsec = 100000000;
